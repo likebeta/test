@@ -126,7 +126,8 @@ static string __dump_json(const json& j)
 {
 	if (j.is_string())
 	{
-		return j.get<string>();
+		string tmp = j.dump();
+		return string();
 	}
 	else
 	{
@@ -327,8 +328,9 @@ json CRedis::string_set(const string& key, const string& value)
 		return __discard_json;
 	}
 
-	WriteDebugLog("SET %s %s", key.c_str(), value.c_str());
-	redisAppendCommand(m_pRedis, "SET %s %b", key.c_str(), value.data(), value.size());
+    string cmd = "SET " + key + " " + value;
+	WriteDebugLog("%s", cmd.c_str());
+	redisAppendCommand(m_pRedis, cmd.c_str());
 	redisReply* reply = NULL;
 	redisGetReply(m_pRedis, (void**)&reply);
 	if (reply == NULL)

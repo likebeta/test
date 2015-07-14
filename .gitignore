@@ -249,4 +249,4 @@ $RECYCLE.BIN/
 ~*
 *.pyc
 nohup.out
-
+redis/redis-tester

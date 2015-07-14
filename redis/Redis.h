@@ -58,7 +58,6 @@ public:
 	json list_rpush(const string& key, const json& json_array);
 	json list_range(const string& key, long long begin, long long end);
 	json list_lpop(const string& key);
-    int list_rem(const string& key, const string& value, long long& count);
 
 	// set操作
 	json set_add(const string& key, const char* value);

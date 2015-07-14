@@ -7,7 +7,7 @@ using namespace std;
 int main(int argc, char** argv)
 {
 	auto t = CRedis();
-	ST_REDIS_INFO info = {"127.0.0.1", 6379, 0};
+	ST_REDIS_INFO info = { "127.0.0.1", 6379, 0 };
 	if (!t.init(info))
 	{
 		return -1;
@@ -21,7 +21,7 @@ int main(int argc, char** argv)
 	print(t.string_get("dddd"));
 	print(t.string_get("tttt"));
 	print(t.del("dddd"));
-	print(t.del(json::array({"dddd", "mmmm", 11, "454545", 8888, json::array(), "tttt", json::object()})));
+	print(t.del(json::array({ "dddd", "mmmm", 11, "454545", 8888, json::array(), "tttt", json::object() })));
 
 	// list²Ù×÷²âÊÔ
 	print(t.list_rpush("test", "first"));
@@ -45,7 +45,7 @@ int main(int argc, char** argv)
 	print(t.set_ismember("setss", 123));
 	print(t.del("set"));
 
-	// push²Ù×÷²âÊÔ
+	// hash²Ù×÷²âÊÔ
 	print(t.hash_set("hash", "name", "ysl"));
 	print(t.hash_set("hash", "age", 18));
 	print(t.hash_set("hash", "111", 18));
@@ -68,7 +68,7 @@ int main(int argc, char** argv)
 	print(t.hash_del("hashddd", json::array({ "name", 112, "fuck" })));
 	print(t.hash_getall("hash"));
 
-	print(t.hash_mget_as_map("hash", json::array({"ysl", "name", 111})));
+	print(t.hash_mget_as_map("hash", json::array({ "ysl", "name", 111 })));
 	print(t.hash_mget_as_map("hashddd", json::array({ "ysl", "name", 111 })));
 
 	print(t.hash_mget("hash", json::array({ "ysl", "name", 111 })));
@@ -98,7 +98,7 @@ int main(int argc, char** argv)
 	print(t.evalsha("27439e5ea0fb94e55533c1e55e70a3e81ac002b1"));
 	print(t.evalsha("922ae6b0b255e3fee8de6cad9b70aadc7d46453c"));
 	print(t.evalsha("5924dd70b5114e67f1837b415600b26dccebda4e"));
-	print(t.evalsha("5924dd70b5114e67f1837b415600b26dccebda4e", json::array({"test"})));
+	print(t.evalsha("5924dd70b5114e67f1837b415600b26dccebda4e", json::array({ "test" })));
 	print(t.evalsha("5924dd70b5114e67f1837b415600b26dccebda4e", json::array({ "test", "show" })));
 
 	return 0;

@@ -8,7 +8,7 @@ import sys
 import json
 import struct
 from python.Macro import *
-from python.HttpClient import HttpClient
+from HttpClient import HttpClient
 from framework.context import Context
 from twisted.internet import reactor
 from twisted.internet.protocol import Protocol
@@ -59,7 +59,6 @@ class PlayerProtocol(Protocol):
 
     def connectionLost(self, reason=connectionDone):
         self.factory.done(reason)
-
 
 class PlayerFactory(ClientFactory):
 
@@ -335,6 +334,7 @@ class PlayerClient(object):
             self.req_force_quit()
 
 
+@defer.inlineCallbacks
 def run():
     redis_key = sys.argv[1]
     Context.Log.show_location_prefix(False)
@@ -342,18 +342,19 @@ def run():
     params = Context.RedisConfig.get_global_item_json('params')
     http_sdk = params['server']['http.sdk']
     httpClient = HttpClient(sys.argv[2], sys.argv[3], sys.argv[4], http_sdk)
-    httpClient.run_as_player()
-    tcpClient = PlayerClient(httpClient)
-    if len(sys.argv) > 5:
-        tcpClient.tableId = int(sys.argv[5])
-    if len(sys.argv) > 6:
-        tcpClient.seatId = int(sys.argv[6])
-    d = defer.Deferred()
-    factory = PlayerFactory(d, tcpClient)
-    reactor.connectTCP(httpClient.host, int(httpClient.port), factory)
-    d.addCallbacks(done, connect_failed)
-    Context.Log.info('start reactor.............................')
-    reactor.run()
+    yield httpClient.run_as_player()
+    if not httpClient.has_login:
+        reactor.stop()
+    else:
+        tcpClient = PlayerClient(httpClient)
+        if len(sys.argv) > 5:
+            tcpClient.tableId = int(sys.argv[5])
+        if len(sys.argv) > 6:
+            tcpClient.seatId = int(sys.argv[6])
+        d = defer.Deferred()
+        factory = PlayerFactory(d, tcpClient)
+        reactor.connectTCP(httpClient.host, int(httpClient.port), factory)
+        d.addCallbacks(done, connect_failed)
 
 def done(reason):
     Context.Log.debug('connect lost:', reason)
@@ -367,4 +368,5 @@ def connect_failed(err):
     reactor.stop()
 
 if __name__ == '__main__':
-    run()
+    reactor.callWhenRunning(run)
+    reactor.run()

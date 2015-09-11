@@ -11,5 +11,11 @@ int main(int argc, char *argv[])
 	{
 		cout << t << endl;
 	}
+
+	t = http.web_post(argv[1], j);
+	if (t.is_object())
+	{
+		cout << t << endl;
+	}
 	return 0;
 }

@@ -4,4 +4,4 @@
 #  Author: 易思龙 <ixxoo.me@gmail.com>
 #  Create: 2015-09-10
 
-g++ Source.cpp urlencode.cpp httpClient.cpp mongoose.c -W -Wall -DNS_ENABLE_SSL -lssl -lcrypto -pthread --std=c++11
+g++ main.cpp urlencode.cpp httpClient.cpp mongoose.c -W -Wall -DNS_ENABLE_SSL -lssl -lcrypto -pthread --std=c++11

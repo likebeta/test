@@ -15,6 +15,7 @@ public:
 	void set_end();
 public:
 	json web_get(const string& url, const json& query = nullptr, int timeout = 3);
+	json web_post(const string& url, const json& post = nullptr, int timeout = 3);
 private:
 	static void ev_handler(struct mg_connection *nc, int ev, void *ev_data);
 	json m_data;

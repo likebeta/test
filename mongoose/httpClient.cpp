@@ -46,6 +46,38 @@ json httpClient::web_get(const string& url, const json& query /* = nullptr */, i
 	return m_data;
 }
 
+json httpClient::web_post(const string& url, const json& post /* = nullptr */, int timeout /* = 3 */)
+{
+	m_data = nullptr;
+	m_bEnd = false;
+	struct mg_mgr mgr;
+	mg_mgr_init(&mgr, this);
+
+	if (post.is_discarded())
+	{
+		return nullptr;
+	}
+
+	string data = "msg=" + CUrlEncode::Encode(post.dump());
+	cout << "req: " << url << "  "  << data << endl;
+	mg_connect_http(&mgr, httpClient::ev_handler, url.c_str(), NULL, data.c_str());
+
+	time_t ts_start = time(NULL);
+	time_t ts_end = ts_start;
+	while (!m_bEnd)
+	{
+		if ((ts_end - ts_start) >= timeout)
+		{
+			cout << "timeout" << endl;
+			break;
+		}
+		ts_end = mg_mgr_poll(&mgr, 1000);
+	}
+	mg_mgr_free(&mgr);
+
+	return m_data;
+}
+
 void httpClient::ev_handler(struct mg_connection *nc, int ev, void *ev_data)
 {
 	struct http_message *hm = (struct http_message *) ev_data;

@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8"/>
+    <script type="text/javascript">
+        var socket = null;
+        var isopen = false;
+        var lasted_hold = 0;
+
+        window.onload = function () {
+
+            socket = new WebSocket("ws://192.168.1.35:9009");
+            socket.binaryType = "arraybuffer";
+
+            socket.addEventListener('open', function (e) {
+                console.log("Connected!");
+                isopen = true;
+            });
+
+            socket.addEventListener('message', function (e) {
+                if (typeof e.data == "string") {
+                    console.log("Text message received: " + e.data);
+                }
+                else {
+                    var header = new Uint32Array(e.data, 0, 3);
+                    var cmd = header[0];
+                    var len = header[1];
+                    var seq = header[2];
+                    var data = [];
+                    var body = new Uint8Array(e.data, 12);
+                    for (var i = 0; i < body.length; ++i) {
+                        data[i] = String.fromCharCode(body[i]);
+                    }
+                    var msg = JSON.parse(data.join(''));
+                    onMessage(cmd, msg);
+                }
+            });
+
+            socket.addEventListener('close', function (e) {
+                console.log("Connection closed.");
+                socket = null;
+                isopen = false;
+            });
+
+            socket.addEventListener('error', function (e) {
+                console.log("socket error.");
+                socket = null;
+                isopen = false;
+            });
+        };
+
+        var rstr2utf8 = function (input) {
+            var output = "";
+
+            for (var n = 0; n < input.length; n++) {
+                var c = input.charCodeAt(n);
+
+                if (c < 128) {
+                    output += String.fromCharCode(c);
+                } else if ((c > 127) && (c < 2048)) {
+                    output += String.fromCharCode((c >> 6) | 192);
+                    output += String.fromCharCode((c & 63) | 128);
+                } else {
+                    output += String.fromCharCode((c >> 12) | 224);
+                    output += String.fromCharCode(((c >> 6) & 63) | 128);
+                    output += String.fromCharCode((c & 63) | 128);
+                }
+            }
+
+            return output;
+        };
+
+
+        function test() {
+            var user_info = {
+                "userId": 20591,
+                "gameId": 2,
+                "session": "017114260A10CD45A7B3CBCBCE76ADB2",
+                "login": 1,
+                "name": '你4的5'
+            };
+            sendMessage(0x1008065, user_info);
+
+            var game_info = {
+                "gameId": 2
+            };
+            sendMessage(0x1008066, game_info);
+
+            setInterval(sendHold, 4000);
+        }
+
+        function sendHold() {
+            var now_ms = new Date().getTime();
+            if (now_ms - lasted_hold >= 8000) {
+                sendMessage(0x1008064, {});
+            }
+        }
+
+        function sendMessage(cmd, msg) {
+            if (isopen) {
+                var data = JSON.stringify(msg);
+                console.log('==== send', cmd.toString(16), data);
+                data = rstr2utf8(data);
+                var buf = new ArrayBuffer(12 + data.length * 2);
+                var header = new Uint32Array(buf, 0, 3);
+                header[0] = cmd;
+                header[1] = data.length;
+                header[2] = 0;
+                var body = new Uint8Array(buf, 12);
+                for (var i = 0; i < data.length; ++i) {
+                    body[i] = data.charCodeAt(i);
+                }
+                lasted_hold = new Date().getTime();
+                socket.send(buf);
+            }
+            else {
+                console.log("Connection not opened.")
+            }
+        }
+
+        function onMessage(cmd, msg) {
+            console.log('==== recv', cmd.toString(16), JSON.stringify(msg));
+        }
+    </script>
+</head>
+<body>
+<p>Open your browser's JavaScript console to see what's happening (hit F12).</p>
+<button onclick='test();'>test Message</button>
+</body>
+</html>

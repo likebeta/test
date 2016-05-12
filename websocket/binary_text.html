@@ -22,17 +22,18 @@
                     console.log("Text message received: " + e.data);
                 }
                 else {
-                    var header = new Uint32Array(e.data, 0, 3);
-                    var cmd = header[0];
-                    var len = header[1];
-                    var seq = header[2];
-                    var data = [];
-                    var body = new Uint8Array(e.data, 12);
-                    for (var i = 0; i < body.length; ++i) {
-                        data[i] = String.fromCharCode(body[i]);
+                    var data = new Uint8Array(e.data);
+                    var viewer = new DataView(data.buffer);
+                    var cmd = viewer.getUint32(0, true);
+                    var len = viewer.getUint32(4, true);
+                    var seq = viewer.getUint32(8, true);
+
+                    var tmp = [];
+                    for (var i = 0; i < len; ++i) {
+                        tmp[i] = String.fromCharCode(data[i+12]);
                     }
-                    var msg = JSON.parse(data.join(''));
-                    onMessage(cmd, msg);
+                    var mi = JSON.parse(tmp.join(''));
+                    onMessage(cmd, mi);
                 }
             });
 
@@ -101,14 +102,14 @@
                 var data = JSON.stringify(msg);
                 console.log('==== send', cmd.toString(16), data);
                 data = rstr2utf8(data);
-                var buf = new ArrayBuffer(12 + data.length * 2);
-                var header = new Uint32Array(buf, 0, 3);
-                header[0] = cmd;
-                header[1] = data.length;
-                header[2] = 0;
-                var body = new Uint8Array(buf, 12);
+                var buf = new Uint8Array(12 + data.length);
+                var viewer = new DataView(buf.buffer);
+                // header
+                viewer.setUint32(0, cmd, true);
+                viewer.setUint32(4, data.length, true);
+                viewer.setUint32(8, 0, true);
                 for (var i = 0; i < data.length; ++i) {
-                    body[i] = data.charCodeAt(i);
+                    viewer.setUint8(i + 12, data.charCodeAt(i));
                 }
                 lasted_hold = new Date().getTime();
                 socket.send(buf);

@@ -1,0 +1,31 @@
+syntax = "proto3";
+//命名空间
+package gym;
+
+//健身房
+service Gym {
+    rpc Building (Builder) returns (Reply) {}
+    rpc Talking (Talker) returns (Reply) {}
+    rpc Pay (stream Payer) returns (stream Reply) {}
+}
+
+message Builder {
+    string name = 1;
+    repeated string actions = 2;
+}
+
+message Talker {
+    string name = 1;
+    string content = 2;
+}
+
+message Payer {
+    string name = 1;
+    uint32 amount = 2;
+}
+
+//结果
+message Reply {
+    int32 code = 1;
+    string msg = 2;
+}

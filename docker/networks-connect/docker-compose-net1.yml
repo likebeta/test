@@ -1,0 +1,11 @@
+version: '3.8'
+networks:
+  default:
+    name: net1
+services:
+  redis1:
+    image: redis:4.0.14-alpine
+    container_name: net1-redis-1
+  redis2:
+    image: redis:4.0.14-alpine
+    container_name: net1-redis-2

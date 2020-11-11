@@ -1,0 +1,30 @@
+version: '3.8'
+networks:
+  default:
+    name: net2
+  net1:
+    external: true
+services:
+  redis1:
+    image: redis:4.0.14-alpine
+    container_name: net2-redis-1
+    networks: 
+      - net1
+      - default
+  redis2:
+    image: redis:4.0.14-alpine
+    container_name: net2-redis-2
+  redis3:
+    image: redis:4.0.14-alpine
+    container_name: net2-redis-3
+    networks: 
+      - default
+      - net1
+  redis4:
+    image: redis:4.0.14-alpine
+    container_name: net2-redis-4
+    networks: 
+      - net1
+  redis5:
+    image: redis:4.0.14-alpine
+    container_name: net2-redis-5
